@@ -438,5 +438,14 @@ FAST(readability-use-anyofallof, 2.0)
 FAST(readability-use-std-min-max, -1.0)
 FAST(zircon-temporary-objects, 1.0)
 
+FAST(yt-auto-usage, -0.0)
+FAST(yt-class-naming, 2.0)
+FAST(yt-enum-naming, 0.0)
+FAST(yt-function-naming, 1.0)
+FAST(yt-namespace-naming, 1.0)
+FAST(yt-variable-naming, 0.0)
+
+
 #undef FAST
 #undef SLOW
+

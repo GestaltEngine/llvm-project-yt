@@ -34,6 +34,7 @@ add_extra_unittest(ClangTidyTests
   OverlappingReplacementsTest.cpp
   UsingInserterTest.cpp
   ReadabilityModuleTest.cpp
+  YtsaurusModuleTest.cpp
   TransformerClangTidyCheckTest.cpp
   )
 
@@ -61,6 +62,7 @@ target_link_libraries(ClangTidyTests
   clangTidyObjCModule
   clangTidyReadabilityModule
   clangTidyUtils
+  clangTidyYTModule
   LLVMTestingAnnotations
   LLVMTestingSupport
   )
