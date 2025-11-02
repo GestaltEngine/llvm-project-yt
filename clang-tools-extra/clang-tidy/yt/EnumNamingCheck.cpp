@@ -7,6 +7,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "EnumNamingCheck.h"
+#include "NamingUtils.h"
 #include "clang/AST/ASTContext.h"
 #include "clang/ASTMatchers/ASTMatchFinder.h"
 
@@ -25,18 +26,15 @@ bool EnumNamingCheck::isValidEnumName(StringRef Name) const {
 std::string EnumNamingCheck::toValidEnumName(StringRef Name) const {
   if (Name.empty())
     return "E";
-  std::string Result = "E";
-  size_t Start = (Name[0] == 'E' || Name[0] == 'e') ? 1 : 0;
-  bool capitalizeNext = true;
-  for (size_t I = Start; I < Name.size(); ++I) {
-    if (Name[I] == '_') {
-      capitalizeNext = true;
-      continue;
-    }
-    Result += capitalizeNext ? std::toupper(Name[I]) : std::tolower(Name[I]);
-    capitalizeNext = false;
+
+  // Remove 'E' or 'e' prefix if present
+  StringRef BaseName = Name;
+  if (!Name.empty() && (Name[0] == 'E' || Name[0] == 'e')) {
+    BaseName = Name.drop_front(1);
   }
-  return Result;
+
+  // Convert to PascalCase and add 'E' prefix
+  return "E" + toPascalCase(BaseName);
 }
 
 void EnumNamingCheck::check(const MatchFinder::MatchResult &Result) {

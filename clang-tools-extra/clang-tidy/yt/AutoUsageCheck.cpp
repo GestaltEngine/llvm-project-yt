@@ -18,7 +18,7 @@ void AutoUsageCheck::registerMatchers(MatchFinder *Finder) {
   Finder->addMatcher(varDecl(hasType(autoType()), unless(isImplicit())).bind("var"), this);
 }
 
-bool AutoUsageCheck::isPrimitiveType(QualType Type) const {
+bool AutoUsageCheck::isIntOrBoolType(QualType Type) const {
   if (Type.isNull()) {
     // has not been deduced yet.
     return false;
@@ -29,20 +29,7 @@ bool AutoUsageCheck::isPrimitiveType(QualType Type) const {
     return false;
   switch (BT->getKind()) {
     case BuiltinType::Bool:
-    case BuiltinType::Char_S:
-    case BuiltinType::Char_U:
-    case BuiltinType::SChar:
-    case BuiltinType::UChar:
-    case BuiltinType::Short:
-    case BuiltinType::UShort:
     case BuiltinType::Int:
-    case BuiltinType::UInt:
-    case BuiltinType::Long:
-    case BuiltinType::ULong:
-    case BuiltinType::LongLong:
-    case BuiltinType::ULongLong:
-    case BuiltinType::Float:
-    case BuiltinType::Double:
         return true;
     default:
         return false;
@@ -59,7 +46,7 @@ void AutoUsageCheck::check(const MatchFinder::MatchResult &Result) {
       return;
     DeducedType = AT->getDeducedType();
   }
-  if (isPrimitiveType(DeducedType)) {
+  if (isIntOrBoolType(DeducedType)) {
     DeducedType = DeducedType.getCanonicalType();
     diag(Var->getLocation(),
          "use of 'auto' with primitive type '%0' is discouraged; prefer explicit type declaration")

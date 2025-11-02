@@ -9,6 +9,7 @@ add_clang_library(clangTidyYTModule
   FunctionNamingCheck.cpp
   IncludeOrderCheck.cpp
   NamespaceNamingCheck.cpp
+  NamingUtils.cpp
   VariableNamingCheck.cpp
   YTTidyModule.cpp
 

@@ -1,4 +1,5 @@
 #include "ClassNamingCheck.h"
+#include "NamingUtils.h"
 #include "clang/AST/ASTContext.h"
 #include "clang/ASTMatchers/ASTMatchFinder.h"
 #include "clang/ASTMatchers/ASTMatchers.h"
@@ -11,27 +12,6 @@ namespace tidy {
 namespace yt {
 
 namespace {
-
-bool isPascalCase(StringRef Name) {
-  if (Name.empty())
-    return false;
-
-  // First character should be uppercase
-  if (!std::isupper(Name[0]))
-    return false;
-
-  if (Name.size() <= 3) {
-    return true;
-  }
-
-  for (char C : Name) {
-    if (std::islower(C)) {
-      return true;
-    }
-  }
-
-  return false;
-}
 
 bool isInterfaceBaseName(StringRef BaseName) {
   return BaseName[0] == 'I';

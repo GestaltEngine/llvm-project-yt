@@ -7,6 +7,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "NamespaceNamingCheck.h"
+#include "NamingUtils.h"
 #include "clang/AST/ASTContext.h"
 #include "clang/ASTMatchers/ASTMatchFinder.h"
 
@@ -25,18 +26,15 @@ bool NamespaceNamingCheck::isValidNamespaceName(StringRef Name) const {
 std::string NamespaceNamingCheck::toValidNamespaceName(StringRef Name) const {
   if (Name.empty())
     return "N";
-  std::string Result = "N";
-  size_t Start = (Name[0] == 'N' || Name[0] == 'n') ? 1 : 0;
-  bool CapitalizeNext = true;
-  for (size_t I = Start; I < Name.size(); ++I) {
-    if (Name[I] == '_') {
-      CapitalizeNext = true;
-      continue;
-    }
-    Result += static_cast<char>(CapitalizeNext ? std::toupper(Name[I]) : std::tolower(Name[I]));
-    CapitalizeNext = false;
+
+  // Remove 'N' or 'n' prefix if present
+  StringRef BaseName = Name;
+  if (!Name.empty() && (Name[0] == 'N' || Name[0] == 'n')) {
+    BaseName = Name.drop_front(1);
   }
-  return Result;
+
+  // Convert to PascalCase and add 'N' prefix
+  return "N" + toPascalCase(BaseName);
 }
 
 void NamespaceNamingCheck::check(const MatchFinder::MatchResult &Result) {

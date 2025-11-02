@@ -7,6 +7,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "VariableNamingCheck.h"
+#include "NamingUtils.h"
 #include "clang/AST/ASTContext.h"
 #include "clang/ASTMatchers/ASTMatchFinder.h"
 
@@ -19,53 +20,6 @@ void VariableNamingCheck::registerMatchers(MatchFinder *Finder) {
   Finder->addMatcher(parmVarDecl(unless(isImplicit())).bind("param"), this);
 }
 
-bool VariableNamingCheck::isCamelCase(StringRef Name) const {
-  return !Name.empty() && std::islower(Name[0]);
-}
-
-bool VariableNamingCheck::isPascalCase(StringRef Name) const {
-  return !Name.empty() && std::isupper(Name[0]);
-}
-
-std::string VariableNamingCheck::toCamelCase(StringRef Name) const {
-  if (Name.empty())
-    return "";
-  std::string Result;
-  bool capitalizeNext = false, first = true;
-  for (char C : Name) {
-    if (C == '_') {
-      capitalizeNext = true;
-      continue;
-    }
-    if (first) {
-      Result += std::tolower(C);
-      first = false;
-    } else if (capitalizeNext) {
-      Result += std::toupper(C);
-      capitalizeNext = false;
-    } else {
-      Result += std::tolower(C);
-    }
-  }
-  return Result;
-}
-
-std::string VariableNamingCheck::toPascalCase(StringRef Name) const {
-  if (Name.empty())
-    return "";
-  std::string Result;
-  bool capitalizeNext = true;
-  for (char C : Name) {
-    if (C == '_') {
-      capitalizeNext = true;
-      continue;
-    }
-    Result += capitalizeNext ? std::toupper(C) : std::tolower(C);
-    capitalizeNext = false;
-  }
-  return Result;
-}
-
 void VariableNamingCheck::check(const MatchFinder::MatchResult &Result) {
   const auto *Var = Result.Nodes.getNodeAs<VarDecl>("var");
   const auto *Param = Result.Nodes.getNodeAs<ParmVarDecl>("param");
@@ -75,18 +29,31 @@ void VariableNamingCheck::check(const MatchFinder::MatchResult &Result) {
   StringRef Name = Decl->getName();
   if (Name.empty() || Name.starts_with("_"))
     return;
-  
-  bool isLocal = Param || (Var && Var->isLocalVarDecl());
-  bool isGlobal = Var && (Var->hasGlobalStorage() || Var->isStaticDataMember());
-  bool isConstant = Var && Var->getType().isConstQualified() && (isGlobal || Var->isStaticLocal());
-  
-  if (isLocal && !isCamelCase(Name)) {
+
+  if (Name == "Logger" || Name == "this_")
+    return;
+
+  bool IsLocal = Param || (Var && Var->isLocalVarDecl());
+  bool IsGlobal = Var && (Var->hasGlobalStorage() || Var->isStaticDataMember());
+  bool IsConstant = Var && Var->getType().isConstQualified() && (IsGlobal || Var->isStaticLocal());
+
+  if (IsLocal && !isCamelCase(Name)) {
+    if (IsConstant) {
+      if (!isPascalCase(Name)) {
+        diag(Decl->getLocation(),
+             "local variable or parameter '%0' should be in PascalCase; consider renaming to '%1'")
+            << Name << toPascalCase(Name);
+      }
+    } else {
+      if (!isCamelCase(Name)) {
+        diag(Decl->getLocation(),
+             "local variable or parameter '%0' should be in camelCase; consider renaming to '%1'")
+            << Name << toCamelCase(Name);
+      }
+    }
+  } else if ((IsGlobal || IsConstant) && !isPascalCase(Name)) {
     diag(Decl->getLocation(),
-         "local variable or parameter '%0' should be in camelCase; consider renaming to '%1'")
-        << Name << toCamelCase(Name);
-  } else if ((isGlobal || isConstant) && !isPascalCase(Name)) {
-    diag(Decl->getLocation(),
-         "global variable or constant '%0' should be in PascalCase; consider renaming to '%1'")
+         "global/static variable or constant '%0' should be in PascalCase; consider renaming to '%1'")
         << Name << toPascalCase(Name);
   }
 }

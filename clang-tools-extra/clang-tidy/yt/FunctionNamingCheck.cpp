@@ -7,6 +7,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "FunctionNamingCheck.h"
+#include "NamingUtils.h"
 #include "clang/AST/ASTContext.h"
 #include "clang/ASTMatchers/ASTMatchFinder.h"
 
@@ -20,19 +21,6 @@ void FunctionNamingCheck::registerMatchers(MatchFinder *Finder) {
                    unless(cxxConstructorDecl()),
                    unless(cxxDestructorDecl()),
                    unless(cxxConversionDecl())).bind("func"), this);
-}
-
-bool FunctionNamingCheck::isPascalCase(StringRef Name) const {
-  if (Name.empty())
-    return false;
-  if (!std::isupper(Name[0]))
-    return false;
-  for (char C : Name) {
-    if (std::islower(C)) {
-      return true;
-    }
-  }
-  return false;
 }
 
 void FunctionNamingCheck::check(const MatchFinder::MatchResult &Result) {

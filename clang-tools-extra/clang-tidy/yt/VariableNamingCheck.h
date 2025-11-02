@@ -10,6 +10,7 @@
 #define LLVM_CLANG_TOOLS_EXTRA_CLANG_TIDY_YT_VARIABLENAMING_CHECK_H
 
 #include "../ClangTidyCheck.h"
+#include "NamingUtils.h"
 
 namespace clang::tidy::yt {
 
@@ -19,12 +20,6 @@ public:
       : ClangTidyCheck(Name, Context) {}
   void registerMatchers(ast_matchers::MatchFinder *Finder) override;
   void check(const ast_matchers::MatchFinder::MatchResult &Result) override;
-
-private:
-  bool isCamelCase(StringRef Name) const;
-  bool isPascalCase(StringRef Name) const;
-  std::string toCamelCase(StringRef Name) const;
-  std::string toPascalCase(StringRef Name) const;
 };
 
 } // namespace clang::tidy::yt

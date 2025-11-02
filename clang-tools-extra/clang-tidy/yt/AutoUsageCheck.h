@@ -21,7 +21,7 @@ public:
   void check(const ast_matchers::MatchFinder::MatchResult &Result) override;
 
 private:
-  bool isPrimitiveType(QualType Type) const;
+  bool isIntOrBoolType(QualType Type) const;
 };
 
 } // namespace clang::tidy::yt
