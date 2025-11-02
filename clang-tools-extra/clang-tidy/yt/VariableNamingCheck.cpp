@@ -73,13 +73,13 @@ void VariableNamingCheck::check(const MatchFinder::MatchResult &Result) {
   if (!Decl || Decl->isImplicit())
     return;
   StringRef Name = Decl->getName();
-  if (Name.empty() || Name.starts_with("_"))
+  if (Name.empty() || Name.startswith("_"))
     return;
-  
+
   bool isLocal = Param || (Var && Var->isLocalVarDecl());
   bool isGlobal = Var && (Var->hasGlobalStorage() || Var->isStaticDataMember());
   bool isConstant = Var && Var->getType().isConstQualified() && (isGlobal || Var->isStaticLocal());
-  
+
   if (isLocal && !isCamelCase(Name)) {
     diag(Decl->getLocation(),
          "local variable or parameter '%0' should be in camelCase; consider renaming to '%1'")

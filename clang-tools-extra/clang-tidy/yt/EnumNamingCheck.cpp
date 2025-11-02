@@ -44,7 +44,7 @@ void EnumNamingCheck::check(const MatchFinder::MatchResult &Result) {
   if (!Enum || !Enum->getIdentifier())
     return;
   StringRef Name = Enum->getName();
-  if (Name.starts_with("__"))
+  if (Name.startswith("__"))
     return;
   if (!isValidEnumName(Name)) {
     diag(Enum->getLocation(),

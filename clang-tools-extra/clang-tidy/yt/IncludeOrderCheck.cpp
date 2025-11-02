@@ -26,9 +26,8 @@ public:
   void InclusionDirective(SourceLocation HashLoc, const Token &IncludeTok,
                           StringRef FileName, bool IsAngled,
                           CharSourceRange FilenameRange,
-                          OptionalFileEntryRef File, StringRef SearchPath,
-                          StringRef RelativePath, const Module *SuggestedModule,
-                          bool ModuleImported,
+                          const FileEntry* File, StringRef SearchPath,
+                          StringRef RelativePath, const Module *Imported,
                           SrcMgr::CharacteristicKind FileType) override;
   void EndOfMainFile() override;
 
@@ -68,22 +67,22 @@ static int getPriority(StringRef Filename, bool IsAngled, bool IsMainModule) {
 
   // Now handle angled includes
   // YT-specific headers (all use angle brackets)
-  if (Filename.starts_with("yt/yt/server/"))
+  if (Filename.startswith("yt/yt/server/"))
     return 1;
-  if (Filename.starts_with("yt/yt/ytlib/"))
+  if (Filename.startswith("yt/yt/ytlib/"))
     return 2;
-  if (Filename.starts_with("yt/yt/client/") ||
-      Filename.starts_with("yt/yt/library/"))
+  if (Filename.startswith("yt/yt/client/") ||
+      Filename.startswith("yt/yt/library/"))
     return 3;
-  if (Filename.starts_with("yt/yt/core/"))
+  if (Filename.startswith("yt/yt/core/"))
     return 4;
 
   // Arcadia library headers
-  if (Filename.starts_with("library/"))
+  if (Filename.startswith("library/"))
     return 5;
 
   // Standard C library headers (common ones)
-  if (Filename.starts_with("c") && Filename.size() > 1 &&
+  if (Filename.startswith("c") && Filename.size() > 1 &&
       !Filename.contains('/')) {
     // Headers like cassert, cstdio, cstring, etc.
     return 100;
@@ -101,9 +100,9 @@ static int getPriority(StringRef Filename, bool IsAngled, bool IsMainModule) {
 
 void IncludeOrderPPCallbacks::InclusionDirective(
     SourceLocation HashLoc, const Token &IncludeTok, StringRef FileName,
-    bool IsAngled, CharSourceRange FilenameRange, OptionalFileEntryRef File,
-    StringRef SearchPath, StringRef RelativePath, const Module *SuggestedModule,
-    bool ModuleImported, SrcMgr::CharacteristicKind FileType) {
+    bool IsAngled, CharSourceRange FilenameRange, const FileEntry *File,
+    StringRef SearchPath, StringRef RelativePath, const Module *Imported,
+    SrcMgr::CharacteristicKind FileType) {
   // We recognize the first include as a special main module header and want
   // to leave it in the top position.
   IncludeDirective ID = {HashLoc, FilenameRange, std::string(FileName),

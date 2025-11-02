@@ -40,7 +40,7 @@ void FunctionNamingCheck::check(const MatchFinder::MatchResult &Result) {
   if (!Func || Func->isImplicit() || Func->isMain() || Func->isOverloadedOperator())
     return;
   StringRef Name = Func->getName();
-  if (Name.starts_with("__") || Name.starts_with("operator"))
+  if (Name.startswith("__") || Name.startswith("operator"))
     return;
   if (!isPascalCase(Name)) {
     diag(Func->getLocation(),

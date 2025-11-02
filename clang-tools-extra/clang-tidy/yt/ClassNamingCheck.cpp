@@ -38,7 +38,7 @@ bool isInterfaceBaseName(StringRef BaseName) {
 }
 
 bool isTRefCountedBase(StringRef BaseName) {
-  return BaseName.ends_with("TRefCounted");
+  return BaseName.endswith("TRefCounted");
 }
 
 bool isInterface(const CXXRecordDecl *Record) {
@@ -47,7 +47,7 @@ bool isInterface(const CXXRecordDecl *Record) {
     if (Method->isImplicit()) {
       continue;
     }
-    if (!Method->isPureVirtual()) {
+    if (!Method->isVirtual() || !Method->isPure()) {
       return false;
     }
   }
@@ -93,7 +93,7 @@ void ClassNamingCheck::check(const MatchFinder::MatchResult &Result) {
         if (!Record->isStruct()) {
           diag(Record->getLocation(), "interfaces should be structs");
         }
-        if (!Name.starts_with("I") || !isPascalCase(Name.drop_front(1))) {
+        if (!Name.startswith("I") || !isPascalCase(Name.drop_front(1))) {
           diag(Record->getLocation(), "interface name '%0' should start with 'I' and be in PascalCase")
               << Name;
         }
@@ -101,7 +101,7 @@ void ClassNamingCheck::check(const MatchFinder::MatchResult &Result) {
         if (!Record->isClass()) {
           diag(Record->getLocation(), "abstract structs which are not interface-like should be classes");
         }
-        if (!Name.starts_with("T") || !isPascalCase(Name.drop_front(1))) {
+        if (!Name.startswith("T") || !isPascalCase(Name.drop_front(1))) {
           diag(Record->getLocation(), "abstract class name '%0' should start with 'T' and be in PascalCase")
               << Name;
         }

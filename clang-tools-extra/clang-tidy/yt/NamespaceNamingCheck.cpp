@@ -44,7 +44,7 @@ void NamespaceNamingCheck::check(const MatchFinder::MatchResult &Result) {
   if (!NS || NS->isAnonymousNamespace())
     return;
   StringRef Name = NS->getName();
-  if (Name == "std" || Name == "boost" || Name.starts_with("__") || NS->isInline())
+  if (Name == "std" || Name == "boost" || Name.startswith("__") || NS->isInline())
     return;
   if (!isValidNamespaceName(Name)) {
     diag(NS->getLocation(),
