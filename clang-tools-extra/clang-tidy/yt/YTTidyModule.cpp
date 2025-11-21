@@ -8,6 +8,7 @@
 #include "GetDoesNotReturnNullptrCheck.h"
 #include "IncludeOrderCheck.h"
 #include "NamespaceNamingCheck.h"
+#include "TestNamingCheck.h"
 #include "VariableNamingCheck.h"
 
 namespace clang {
@@ -24,6 +25,7 @@ public:
     CheckFactories.registerCheck<GetDoesNotReturnNullptrCheck>("yt-get-does-not-return-nullptr");
     CheckFactories.registerCheck<IncludeOrderCheck>("yt-include-order");
     CheckFactories.registerCheck<NamespaceNamingCheck>("yt-namespace-naming");
+    CheckFactories.registerCheck<TestNamingCheck>("yt-test-naming");
     CheckFactories.registerCheck<VariableNamingCheck>("yt-variable-naming");
   }
 };

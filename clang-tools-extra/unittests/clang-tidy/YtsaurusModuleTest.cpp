@@ -4,6 +4,7 @@
 #include "yt/ClassNamingCheck.h"
 #include "yt/NamespaceNamingCheck.h"
 #include "yt/GetDoesNotReturnNullptrCheck.h"
+#include "yt/TestNamingCheck.h"
 #include "gtest/gtest.h"
 
 using namespace clang::tidy::google;
@@ -259,6 +260,60 @@ TEST_F(GetDoesNotReturnNullptrCheckTest, GetDeclarationOnly) {
   EXPECT_FALSE(runCheckOnCode(
       "class TKey { };\n"
       "TKey* GetKey(int id);"));
+}
+
+class TestNamingCheckTest : public ::testing::Test {
+protected:
+  bool runCheckOnCode(const std::string &Code) {
+    static const char Filename[] = "test.cpp";
+    std::vector<ClangTidyError> Errors;
+    std::vector<std::string> Args{"-std=c++17"};
+    test::runCheckOnCode<yt::TestNamingCheck>(Code, &Errors, Filename, Args);
+    if (Errors.empty())
+      return false;
+    return true;
+  }
+};
+
+// Test valid test naming (should not trigger warnings)
+TEST_F(TestNamingCheckTest, ValidTestNaming) {
+  EXPECT_FALSE(runCheckOnCode(
+      "#define TEST_F(fixture, name) void fixture##_##name()\n"
+      "TEST_F(TPartitionKeysBuilderTest, TwoPartitions);"));
+}
+
+// Test invalid test fixture name (should trigger warning)
+TEST_F(TestNamingCheckTest, InvalidFixtureName) {
+  EXPECT_TRUE(runCheckOnCode(
+      "#define TEST_F(fixture, name) void fixture##_##name()\n"
+      "TEST_F(TPartitionKeysBuilder, TwoPartitions);"));
+}
+
+// Test invalid test method name with Test prefix (should trigger warning)
+TEST_F(TestNamingCheckTest, InvalidTestMethodName) {
+  EXPECT_TRUE(runCheckOnCode(
+      "#define TEST_F(fixture, name) void fixture##_##name()\n"
+      "TEST_F(TPartitionKeysBuilderTest, TestTwoPartitions);"));
+}
+
+// Test both invalid fixture and method names (should trigger both warnings)
+TEST_F(TestNamingCheckTest, BothInvalid) {
+  EXPECT_TRUE(runCheckOnCode(
+      "#define TEST_F(fixture, name) void fixture##_##name()\n"
+      "TEST_F(TPartitionKeysBuilder, TestTwoPartitions);"));
+}
+
+// Test TEST_P macro (should work the same way)
+TEST_F(TestNamingCheckTest, ValidTestPNaming) {
+  EXPECT_FALSE(runCheckOnCode(
+      "#define TEST_P(fixture, name) void fixture##_##name()\n"
+      "TEST_P(TPartitionKeysBuilderTest, TwoPartitions);"));
+}
+
+TEST_F(TestNamingCheckTest, InvalidTestPMethodName) {
+  EXPECT_TRUE(runCheckOnCode(
+      "#define TEST_P(fixture, name) void fixture##_##name()\n"
+      "TEST_P(TPartitionKeysBuilderTest, TestTwoPartitions);"));
 }
 
 } // namespace tidy

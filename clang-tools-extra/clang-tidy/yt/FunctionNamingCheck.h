@@ -8,9 +8,6 @@ namespace clang::tidy::yt {
 /// Checks that function names follow YTsaurus naming conventions.
 ///
 /// Functions should be in PascalCase (e.g., DoSomething, GetValue).
-///
-/// For the user-facing documentation see:
-/// http://clang.llvm.org/extra/clang-tidy/checks/yt/function-naming.html
 class FunctionNamingCheck : public ClangTidyCheck {
 public:
   FunctionNamingCheck(StringRef Name, ClangTidyContext *Context)

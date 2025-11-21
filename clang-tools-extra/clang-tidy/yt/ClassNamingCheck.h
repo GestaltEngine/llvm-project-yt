@@ -9,11 +9,8 @@ namespace yt {
 
 /// Checks that class and struct names follow YtSaurus naming conventions:
 /// - Classes should start with 'T' and be in PascalCase
-/// - Interfaces should start with 'I' and be in PascalCase  
+/// - Interfaces should start with 'I' and be in PascalCase
 /// - Enums should start with 'E' and be in PascalCase
-///
-/// For the user-facing documentation see:
-/// http://clang.llvm.org/extra/clang-tidy/checks/yt-class-naming.html
 class ClassNamingCheck : public ClangTidyCheck {
 public:
   ClassNamingCheck(StringRef Name, ClangTidyContext *Context)

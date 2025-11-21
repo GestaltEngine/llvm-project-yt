@@ -11,6 +11,7 @@ add_clang_library(clangTidyYTModule
   IncludeOrderCheck.cpp
   NamespaceNamingCheck.cpp
   NamingUtils.cpp
+  TestNamingCheck.cpp
   VariableNamingCheck.cpp
   YTTidyModule.cpp
 
