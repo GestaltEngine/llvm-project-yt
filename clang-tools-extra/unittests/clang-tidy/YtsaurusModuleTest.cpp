@@ -3,6 +3,7 @@
 #include "google/GlobalNamesInHeadersCheck.h"
 #include "yt/ClassNamingCheck.h"
 #include "yt/NamespaceNamingCheck.h"
+#include "yt/GetDoesNotReturnNullptrCheck.h"
 #include "gtest/gtest.h"
 
 using namespace clang::tidy::google;
@@ -172,5 +173,93 @@ TEST_F(NamespaceNamingCheckTest, NamespaceWithClasses) {
 }
 
 } // namespace test
+class GetDoesNotReturnNullptrCheckTest : public ::testing::Test {
+protected:
+  bool runCheckOnCode(const std::string &Code) {
+    static const char Filename[] = "test.cpp";
+    std::vector<ClangTidyError> Errors;
+    std::vector<std::string> Args;
+    test::runCheckOnCode<yt::GetDoesNotReturnNullptrCheck>(Code, &Errors, Filename, Args);
+    if (Errors.empty())
+      return false;
+    return true;
+  }
+};
+
+// Test function starting with Get that returns nullptr (should trigger warning)
+TEST_F(GetDoesNotReturnNullptrCheckTest, GetReturnsNullptr) {
+  EXPECT_TRUE(runCheckOnCode(
+      "class TKey { };\n"
+      "TKey* GetKey(int id) {\n"
+      "  if (id < 0) {\n"
+      "    return nullptr;\n"
+      "  }\n"
+      "  return new TKey();\n"
+      "}"));
+}
+
+// Test method starting with Get that returns nullptr (should trigger warning)
+TEST_F(GetDoesNotReturnNullptrCheckTest, GetMethodReturnsNullptr) {
+  EXPECT_TRUE(runCheckOnCode(
+      "class TKey { };\n"
+      "class TOwner {\n"
+      "public:\n"
+      "  TKey* GetKey(int id) {\n"
+      "    if (id < 0) {\n"
+      "      return nullptr;\n"
+      "    }\n"
+      "    return new TKey();\n"
+      "  }\n"
+      "};"));
+}
+
+// Test function starting with Get that never returns nullptr (should not trigger)
+TEST_F(GetDoesNotReturnNullptrCheckTest, GetNeverReturnsNullptr) {
+  EXPECT_FALSE(runCheckOnCode(
+      "class TKey { };\n"
+      "TKey* GetKey(int id) {\n"
+      "  return new TKey();\n"
+      "}"));
+}
+
+// Test function starting with Find that returns nullptr (should not trigger)
+TEST_F(GetDoesNotReturnNullptrCheckTest, FindReturnsNullptr) {
+  EXPECT_FALSE(runCheckOnCode(
+      "class TKey { };\n"
+      "TKey* FindKey(int id) {\n"
+      "  if (id < 0) {\n"
+      "    return nullptr;\n"
+      "  }\n"
+      "  return new TKey();\n"
+      "}"));
+}
+
+// Test function not starting with Get (should not trigger)
+TEST_F(GetDoesNotReturnNullptrCheckTest, NonGetFunction) {
+  EXPECT_FALSE(runCheckOnCode(
+      "class TKey { };\n"
+      "TKey* CreateKey(int id) {\n"
+      "  if (id < 0) {\n"
+      "    return nullptr;\n"
+      "  }\n"
+      "  return new TKey();\n"
+      "}"));
+}
+
+// Test function starting with Get but not returning pointer (should not trigger)
+TEST_F(GetDoesNotReturnNullptrCheckTest, GetReturnsNonPointer) {
+  EXPECT_FALSE(runCheckOnCode(
+      "int GetValue(int id) {\n"
+      "  return id;\n"
+      "}"));
+}
+
+// Test function declaration without definition (should not trigger)
+TEST_F(GetDoesNotReturnNullptrCheckTest, GetDeclarationOnly) {
+  EXPECT_FALSE(runCheckOnCode(
+      "class TKey { };\n"
+      "TKey* GetKey(int id);"));
+}
+
 } // namespace tidy
 } // namespace clang

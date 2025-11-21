@@ -7,6 +7,7 @@ add_clang_library(clangTidyYTModule
   ClassNamingCheck.cpp
   EnumNamingCheck.cpp
   FunctionNamingCheck.cpp
+  GetDoesNotReturnNullptrCheck.cpp
   IncludeOrderCheck.cpp
   NamespaceNamingCheck.cpp
   NamingUtils.cpp

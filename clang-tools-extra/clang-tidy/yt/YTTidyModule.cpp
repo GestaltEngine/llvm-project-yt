@@ -5,6 +5,7 @@
 #include "ClassNamingCheck.h"
 #include "EnumNamingCheck.h"
 #include "FunctionNamingCheck.h"
+#include "GetDoesNotReturnNullptrCheck.h"
 #include "IncludeOrderCheck.h"
 #include "NamespaceNamingCheck.h"
 #include "VariableNamingCheck.h"
@@ -20,6 +21,7 @@ public:
     CheckFactories.registerCheck<ClassNamingCheck>("yt-class-naming");
     CheckFactories.registerCheck<EnumNamingCheck>("yt-enum-naming");
     CheckFactories.registerCheck<FunctionNamingCheck>("yt-function-naming");
+    CheckFactories.registerCheck<GetDoesNotReturnNullptrCheck>("yt-get-does-not-return-nullptr");
     CheckFactories.registerCheck<IncludeOrderCheck>("yt-include-order");
     CheckFactories.registerCheck<NamespaceNamingCheck>("yt-namespace-naming");
     CheckFactories.registerCheck<VariableNamingCheck>("yt-variable-naming");
