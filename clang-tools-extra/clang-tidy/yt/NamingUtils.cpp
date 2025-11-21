@@ -30,10 +30,8 @@ std::string toCamelCase(llvm::StringRef Name) {
   bool CapitalizeNext = false;
   bool PrevWasUpper = false;
 
-  for (size_t I = 0; I < Name.size(); ++I) {
-    char C = Name[I];
-
-    // Handle underscores (snake_case separator)
+  for (char C : Name) {
+     // Handle underscores (snake_case separator)
     if (C == '_') {
       CapitalizeNext = true;
       PrevWasUpper = false;
@@ -54,17 +52,12 @@ std::string toCamelCase(llvm::StringRef Name) {
       PrevWasUpper = true;
     } else if (IsUpper) {
       // Handle PascalCase -> camelCase conversion
-      // If we have consecutive uppercase letters (like "XMLParser"),
-      // keep them uppercase except the last one before a lowercase letter
-      bool NextIsLower = (I + 1 < Name.size() &&
-                         std::islower(static_cast<unsigned char>(Name[I + 1])));
-
-      if (PrevWasUpper && !NextIsLower) {
-        // Keep uppercase for acronyms (e.g., "XML" in "XMLParser")
-        Result += C;
-      } else {
-        // Convert to lowercase (e.g., "P" in "Parser" after "XML")
+      // Only convert to lowercase if previous char was also uppercase (UPPER_CASE)
+      // Keep uppercase if previous was lowercase (PascalCase -> pascalCase)
+      if (PrevWasUpper) {
         Result += static_cast<char>(std::tolower(static_cast<unsigned char>(C)));
+      } else {
+        Result += C;
       }
       PrevWasUpper = true;
     } else {
@@ -87,10 +80,8 @@ std::string toPascalCase(llvm::StringRef Name) {
   bool CapitalizeNext = true;
   bool PrevWasUpper = false;
 
-  for (size_t I = 0; I < Name.size(); ++I) {
-    char C = Name[I];
-
-    // Handle underscores (snake_case separator)
+  for (char C : Name) {
+     // Handle underscores (snake_case separator)
     if (C == '_') {
       CapitalizeNext = true;
       PrevWasUpper = false;
@@ -106,15 +97,11 @@ std::string toPascalCase(llvm::StringRef Name) {
       PrevWasUpper = true;
     } else if (IsUpper) {
       // Handle consecutive uppercase letters (acronyms)
-      bool NextIsLower = (I + 1 < Name.size() &&
-                         std::islower(static_cast<unsigned char>(Name[I + 1])));
-
-      if (PrevWasUpper && NextIsLower) {
-        // This is the last letter of an acronym before a word
-        // Keep it uppercase (e.g., "L" in "XMLLoader")
-        Result += C;
+      // Only convert to lowercase if previous char was also uppercase (UPPER_CASE)
+      // Keep uppercase if previous was lowercase (already PascalCase)
+      if (PrevWasUpper) {
+        Result += static_cast<char>(std::tolower(static_cast<unsigned char>(C)));
       } else {
-        // Part of acronym or single uppercase letter
         Result += C;
       }
       PrevWasUpper = true;
