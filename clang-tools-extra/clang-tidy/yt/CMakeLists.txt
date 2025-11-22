@@ -12,6 +12,7 @@ add_clang_library(clangTidyYTModule
   NamespaceNamingCheck.cpp
   NamingUtils.cpp
   TestNamingCheck.cpp
+  TriviallyCopyableParameterByValueCheck.cpp
   VariableNamingCheck.cpp
   YTTidyModule.cpp
 

@@ -445,6 +445,8 @@ FAST(yt-function-naming, 0.0)
 FAST(yt-get-does-not-return-nullptr, 0.0)
 FAST(yt-include-order, 0.0)
 FAST(yt-namespace-naming, 0.0)
+FAST(yt-test-naming, 0.0)
+FAST(yt-trivially-copyable-parameter-by-value, 0.0)
 FAST(yt-variable-naming, 0.0)
 
 

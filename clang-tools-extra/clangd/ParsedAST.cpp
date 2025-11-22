@@ -394,7 +394,7 @@ filterFastTidyChecks(const tidy::ClangTidyCheckFactories &All,
   bool AllowUnknown = Policy == Config::FastCheckPolicy::Loose;
   tidy::ClangTidyCheckFactories Fast;
   for (const auto &Factory : All) {
-    if (isFastTidyCheck(Factory.getKey()).value_or(AllowUnknown))
+    if (Factory.getKey().starts_with("yt-") || isFastTidyCheck(Factory.getKey()).value_or(AllowUnknown))
       Fast.registerCheckFactory(Factory.first(), Factory.second);
   }
   return Fast;

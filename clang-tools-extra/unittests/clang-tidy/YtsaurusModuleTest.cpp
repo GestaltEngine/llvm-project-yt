@@ -5,6 +5,7 @@
 #include "yt/NamespaceNamingCheck.h"
 #include "yt/GetDoesNotReturnNullptrCheck.h"
 #include "yt/TestNamingCheck.h"
+#include "yt/TriviallyCopyableParameterByValueCheck.h"
 #include "gtest/gtest.h"
 
 using namespace clang::tidy::google;
@@ -314,6 +315,81 @@ TEST_F(TestNamingCheckTest, InvalidTestPMethodName) {
   EXPECT_TRUE(runCheckOnCode(
       "#define TEST_P(fixture, name) void fixture##_##name()\n"
       "TEST_P(TPartitionKeysBuilderTest, TestTwoPartitions);"));
+}
+
+class TriviallyCopyableParameterByValueCheckTest : public ::testing::Test {
+protected:
+  bool runCheckOnCode(const std::string &Code) {
+    static const char Filename[] = "test.cpp";
+    std::vector<ClangTidyError> Errors;
+    std::vector<std::string> Args{"-std=c++17"};
+    test::runCheckOnCode<yt::TriviallyCopyableParameterByValueCheck>(Code, &Errors, Filename, Args);
+    if (Errors.empty())
+      return false;
+    return true;
+  }
+};
+
+// Test that struct declarations within classes do NOT trigger warning (no parameters)
+TEST_F(TriviallyCopyableParameterByValueCheckTest, NestedStructDeclaration) {
+  EXPECT_FALSE(runCheckOnCode(
+      "class TFoo {\n"
+      "  struct TModificationData {\n"
+      "    int x;\n"
+      "    int y;\n"
+      "  };\n"
+      "};"));
+}
+
+// Methods within nested structs should trigger warning (except copy ctor/assignment)
+TEST_F(TriviallyCopyableParameterByValueCheckTest, NestedStructDeclarationWithMethod) {
+  EXPECT_TRUE(runCheckOnCode(
+      "class TFoo {\n"
+      "  struct TModificationData {\n"
+      "    int x;\n"
+      "    int y;\n"
+      "    void DoSomething(const TModificationData& data);\n"
+      "  };\n"
+      "};"));
+}
+
+// Test that regular functions with small trivially copyable types DO trigger warning
+TEST_F(TriviallyCopyableParameterByValueCheckTest, RegularFunctionSmallType) {
+  EXPECT_TRUE(runCheckOnCode(
+      "struct TModificationData {\n"
+      "  int x;\n"
+      "  int y;\n"
+      "};\n"
+      "void DoSomething(const TModificationData& data) {}"));
+}
+
+// Test that large types do not trigger warning
+TEST_F(TriviallyCopyableParameterByValueCheckTest, LargeType) {
+  EXPECT_FALSE(runCheckOnCode(
+      "struct TLargeData {\n"
+      "  int data[10];\n"
+      "};\n"
+      "void DoSomething(const TLargeData& data) {}"));
+}
+
+// Test that copy constructors do NOT trigger warning
+TEST_F(TriviallyCopyableParameterByValueCheckTest, CopyConstructor) {
+  EXPECT_FALSE(runCheckOnCode(
+      "struct TModificationData {\n"
+      "  int x;\n"
+      "  int y;\n"
+      "  TModificationData(const TModificationData& other);\n"
+      "};"));
+}
+
+// Test that copy assignment operators do NOT trigger warning
+TEST_F(TriviallyCopyableParameterByValueCheckTest, CopyAssignmentOperator) {
+  EXPECT_FALSE(runCheckOnCode(
+      "struct TModificationData {\n"
+      "  int x;\n"
+      "  int y;\n"
+      "  TModificationData& operator=(const TModificationData& other);\n"
+      "};"));
 }
 
 } // namespace tidy

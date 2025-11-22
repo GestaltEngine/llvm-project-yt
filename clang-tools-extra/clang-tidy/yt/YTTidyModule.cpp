@@ -9,6 +9,7 @@
 #include "IncludeOrderCheck.h"
 #include "NamespaceNamingCheck.h"
 #include "TestNamingCheck.h"
+#include "TriviallyCopyableParameterByValueCheck.h"
 #include "VariableNamingCheck.h"
 
 namespace clang {
@@ -26,6 +27,7 @@ public:
     CheckFactories.registerCheck<IncludeOrderCheck>("yt-include-order");
     CheckFactories.registerCheck<NamespaceNamingCheck>("yt-namespace-naming");
     CheckFactories.registerCheck<TestNamingCheck>("yt-test-naming");
+    CheckFactories.registerCheck<TriviallyCopyableParameterByValueCheck>("yt-trivially-copyable-parameter-by-value");
     CheckFactories.registerCheck<VariableNamingCheck>("yt-variable-naming");
   }
 };
