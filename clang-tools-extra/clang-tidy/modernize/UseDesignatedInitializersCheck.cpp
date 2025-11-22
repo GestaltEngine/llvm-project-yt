@@ -160,7 +160,7 @@ void UseDesignatedInitializersCheck::check(
         const auto Designator = Designators[InitExpr->getBeginLoc()];
         if (Designator && !Designator->empty())
           Diag << FixItHint::CreateInsertion(InitExpr->getBeginLoc(),
-                                             ("." + *Designator + "=").str());
+                                             ("." + *Designator + " = ").str());
       }
     }
     diag(Type->getBeginLoc(), "aggregate type is defined here",
@@ -186,7 +186,7 @@ void UseDesignatedInitializersCheck::check(
            "use designated init expression to initialize field '%0'")
           << InitExpr->getSourceRange() << *Designator
           << FixItHint::CreateInsertion(InitExpr->getBeginLoc(),
-                                        ("." + *Designator + "=").str());
+                                        ("." + *Designator + " = ").str());
     }
   }
 }
