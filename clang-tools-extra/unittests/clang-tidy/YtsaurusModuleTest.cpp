@@ -6,6 +6,7 @@
 #include "yt/GetDoesNotReturnNullptrCheck.h"
 #include "yt/TestNamingCheck.h"
 #include "yt/TriviallyCopyableParameterByValueCheck.h"
+#include "yt/WaitForInConstructorCheck.h"
 #include "gtest/gtest.h"
 
 using namespace clang::tidy::google;
@@ -391,6 +392,92 @@ TEST_F(TriviallyCopyableParameterByValueCheckTest, CopyAssignmentOperator) {
       "  TModificationData& operator=(const TModificationData& other);\n"
       "};"));
 }
+class WaitForInConstructorCheckTest : public ::testing::Test {
+protected:
+  bool runCheckOnCode(const std::string &Code) {
+    static const char Filename[] = "test.cpp";
+    std::vector<ClangTidyError> Errors;
+    std::vector<std::string> Args{"-std=c++17"};
+    test::runCheckOnCode<yt::WaitForInConstructorCheck>(Code, &Errors, Filename, Args);
+    if (Errors.empty())
+      return false;
+    return true;
+  }
+};
+
+// Test constructor with WaitFor call (should trigger warning)
+TEST_F(WaitForInConstructorCheckTest, ConstructorWithWaitFor) {
+  EXPECT_TRUE(runCheckOnCode(
+      "template<typename T> T WaitFor(T value) { return value; }\n"
+      "class TClient { public: int CreateNode() { return 42; } };\n"
+      "class TCypressKeyWriter {\n"
+      "public:\n"
+      "  TCypressKeyWriter(int owner, TClient* client)\n"
+      "    : Owner_(owner), Client_(client)\n"
+      "  {\n"
+      "    auto nodeId = WaitFor(Client_->CreateNode());\n"
+      "  }\n"
+      "private:\n"
+      "  int Owner_;\n"
+      "  TClient* Client_;\n"
+      "};"));
+}
+
+// Test constructor without WaitFor call (should not trigger)
+TEST_F(WaitForInConstructorCheckTest, ConstructorWithoutWaitFor) {
+  EXPECT_FALSE(runCheckOnCode(
+      "class TClient { public: int CreateNode() { return 42; } };\n"
+      "class TCypressKeyWriter {\n"
+      "public:\n"
+      "  TCypressKeyWriter(int owner, TClient* client)\n"
+      "    : Owner_(owner), Client_(client)\n"
+      "  {\n"
+      "    auto nodeId = Client_->CreateNode();\n"
+      "  }\n"
+      "private:\n"
+      "  int Owner_;\n"
+      "  TClient* Client_;\n"
+      "};"));
+}
+
+// Test constructor with WaitFor in member initializer (should trigger warning)
+TEST_F(WaitForInConstructorCheckTest, ConstructorWithWaitForInInitializer) {
+  EXPECT_TRUE(runCheckOnCode(
+      "template<typename T> T WaitFor(T value) { return value; }\n"
+      "class TClient { public: int CreateNode() { return 42; } };\n"
+      "class TCypressKeyWriter {\n"
+      "public:\n"
+      "  TCypressKeyWriter(int owner, TClient* client)\n"
+      "    : Owner_(owner)\n"
+      "    , Client_(client)\n"
+      "    , NodeId_(WaitFor(client->CreateNode()))\n"
+      "  {}\n"
+      "private:\n"
+      "  int Owner_;\n"
+      "  TClient* Client_;\n"
+      "  int NodeId_;\n"
+      "};"));
+}
+
+// Test regular function with WaitFor (should not trigger)
+TEST_F(WaitForInConstructorCheckTest, RegularFunctionWithWaitFor) {
+  EXPECT_FALSE(runCheckOnCode(
+      "template<typename T> T WaitFor(T value) { return value; }\n"
+      "class TClient { public: int CreateNode() { return 42; } };\n"
+      "void CreateWriter(TClient* client) {\n"
+      "  auto nodeId = WaitFor(client->CreateNode());\n"
+      "}"));
+}
+
+// Test default constructor (should not trigger)
+TEST_F(WaitForInConstructorCheckTest, DefaultConstructor) {
+  EXPECT_FALSE(runCheckOnCode(
+      "class TCypressKeyWriter {\n"
+      "public:\n"
+      "  TCypressKeyWriter() = default;\n"
+      "};"));
+}
+
 
 } // namespace tidy
 } // namespace clang

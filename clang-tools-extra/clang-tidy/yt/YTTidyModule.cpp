@@ -11,6 +11,7 @@
 #include "TestNamingCheck.h"
 #include "TriviallyCopyableParameterByValueCheck.h"
 #include "VariableNamingCheck.h"
+#include "WaitForInConstructorCheck.h"
 
 namespace clang {
 namespace tidy {
@@ -29,6 +30,7 @@ public:
     CheckFactories.registerCheck<TestNamingCheck>("yt-test-naming");
     CheckFactories.registerCheck<TriviallyCopyableParameterByValueCheck>("yt-trivially-copyable-parameter-by-value");
     CheckFactories.registerCheck<VariableNamingCheck>("yt-variable-naming");
+    CheckFactories.registerCheck<WaitForInConstructorCheck>("yt-wait-for-in-constructor");
   }
 };
 

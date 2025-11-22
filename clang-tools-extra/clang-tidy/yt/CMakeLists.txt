@@ -14,6 +14,7 @@ add_clang_library(clangTidyYTModule
   TestNamingCheck.cpp
   TriviallyCopyableParameterByValueCheck.cpp
   VariableNamingCheck.cpp
+  WaitForInConstructorCheck.cpp
   YTTidyModule.cpp
 
   LINK_LIBS
