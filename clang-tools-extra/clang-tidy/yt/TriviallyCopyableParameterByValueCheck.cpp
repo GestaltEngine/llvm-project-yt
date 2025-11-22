@@ -50,6 +50,11 @@ void TriviallyCopyableParameterByValueCheck::check(
     if (Method->isCopyAssignmentOperator()) {
       return;
     }
+    // Exclude defaulted functions (e.g., defaulted comparison operators like operator<=>)
+    // Defaulted comparison operators must have const reference parameters by the standard
+    if (Method->isDefaulted()) {
+      return;
+    }
   }
 
   // Check if the type is trivially copyable
