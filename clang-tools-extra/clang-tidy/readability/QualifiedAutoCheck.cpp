@@ -222,7 +222,7 @@ void QualifiedAutoCheck::check(const MatchFinder::MatchResult &Result) {
       llvm::StringRef LocalConst = IsLocalConst ? "const " : "";
       llvm::StringRef LocalVol = IsLocalVolatile ? "volatile " : "";
       llvm::StringRef LocalRestrict = IsLocalRestrict ? "__restrict " : "";
-      return (PtrConst + "auto *" + LocalConst + LocalVol + LocalRestrict)
+      return (PtrConst + "auto* " + LocalConst + LocalVol + LocalRestrict)
           .str();
     }();
 
@@ -272,8 +272,8 @@ void QualifiedAutoCheck::check(const MatchFinder::MatchResult &Result) {
         return;
       SourceLocation InsertPos = TypeSpec->getBegin();
       diag(InsertPos,
-           "'auto *%select{|const }0%select{|volatile }1%2' can be declared as "
-           "'const auto *%select{|const }0%select{|volatile }1%2'")
+           "'auto* %select{|const }0%select{|volatile }1%2' can be declared as "
+           "'const auto* %select{|const }0%select{|volatile }1%2'")
           << Var->getType().isLocalConstQualified()
           << Var->getType().isLocalVolatileQualified() << Var->getName()
           << FixItHint::CreateInsertion(InsertPos, "const ");
