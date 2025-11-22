@@ -2,6 +2,8 @@
 #define LLVM_CLANG_TOOLS_EXTRA_CLANG_TIDY_YT_TRIVIALLYCOPIABLEPARAMETERBYVALUE_CHECK_H
 
 #include "../ClangTidyCheck.h"
+#include "llvm/Support/Regex.h"
+#include <string>
 
 namespace clang::tidy::yt {
 
@@ -22,10 +24,16 @@ namespace clang::tidy::yt {
 
 class TriviallyCopyableParameterByValueCheck : public ClangTidyCheck {
 public:
-  TriviallyCopyableParameterByValueCheck(StringRef Name, ClangTidyContext *Context)
-      : ClangTidyCheck(Name, Context) {}
+  TriviallyCopyableParameterByValueCheck(StringRef Name, ClangTidyContext *Context);
   void registerMatchers(ast_matchers::MatchFinder *Finder) override;
   void check(const ast_matchers::MatchFinder::MatchResult &Result) override;
+  void storeOptions(ClangTidyOptions::OptionMap &Opts) override;
+
+private:
+  // Store both compiled and non-compiled forms so original value can be
+  // serialized
+  std::string IgnoredTypesRegexStr;
+  llvm::Regex IgnoredTypesRegex;
 };
 
 } // namespace clang::tidy::yt

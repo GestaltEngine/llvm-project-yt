@@ -6,6 +6,17 @@ using namespace clang::ast_matchers;
 
 namespace clang::tidy::yt {
 
+TriviallyCopyableParameterByValueCheck::TriviallyCopyableParameterByValueCheck(
+    StringRef Name, ClangTidyContext *Context)
+    : ClangTidyCheck(Name, Context),
+      IgnoredTypesRegexStr(Options.get("IgnoredTypesRegex", "")),
+      IgnoredTypesRegex(IgnoredTypesRegexStr) {}
+
+void TriviallyCopyableParameterByValueCheck::storeOptions(
+    ClangTidyOptions::OptionMap &Opts) {
+  Options.store(Opts, "IgnoredTypesRegex", IgnoredTypesRegexStr);
+}
+
 void TriviallyCopyableParameterByValueCheck::registerMatchers(MatchFinder *Finder) {
   // Match function parameters that are:
   // 1. Passed by const reference (const T&)
@@ -70,6 +81,10 @@ void TriviallyCopyableParameterByValueCheck::check(
 
   // Get the type name for the diagnostic message
   std::string TypeName = UnderlyingType.getAsString();
+
+  // Check if the type should be ignored based on the regex
+  if (!IgnoredTypesRegexStr.empty() && IgnoredTypesRegex.match(TypeName))
+    return;
 
   diag(Param->getLocation(),
        "parameter '%0' of trivially copyable type '%1' (%2 bytes) "
