@@ -13,8 +13,8 @@ namespace {
 
 class TestNamingPPCallbacks : public PPCallbacks {
 public:
-  TestNamingPPCallbacks(TestNamingCheck &Check, Preprocessor &PP)
-      : Check(Check), PP(PP) {}
+  explicit TestNamingPPCallbacks(TestNamingCheck &Check)
+      : Check(Check) {}
 
   void MacroExpands(const Token &MacroNameTok, const MacroDefinition &MD,
                     SourceRange Range, const MacroArgs *Args) override {
@@ -58,7 +58,6 @@ public:
 
 private:
   TestNamingCheck &Check;
-  Preprocessor &PP;
 };
 
 } // namespace
@@ -67,7 +66,7 @@ void TestNamingCheck::registerPPCallbacks(const SourceManager &SM,
                                           Preprocessor *PP,
                                           Preprocessor *ModuleExpanderPP) {
   PP->addPPCallbacks(
-      std::make_unique<TestNamingPPCallbacks>(*this, *PP));
+      std::make_unique<TestNamingPPCallbacks>(*this));
 }
 
 void TestNamingCheck::registerMatchers(MatchFinder *Finder) {
